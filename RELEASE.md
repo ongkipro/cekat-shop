@@ -4,6 +4,14 @@
 
 This document is the single owner of how a change reaches production. It replaces the previous `VERSION.md` runbook and the deleted `AUTO_UPDATE_DEPLOY.md`, which between them described three mutually exclusive release models, none of which matched the one workflow that exists.
 
+## Install record — cekat.shop
+
+- Adopted product ref: `product/main` @ `3e73f04` (AdsBookCMS 1.7.13), 2026-10-28.
+- Worker `cekat-shop`; D1 `cekat-shop-d1`; KV `cekat-shop-session` (binding `SESSION`); R2 `cekat-shop-assets`.
+- Domains: `cekat.shop`, `www.cekat.shop` (custom domains declared in `wrangler.jsonc` `routes`).
+- Remotes: `origin` = this install's repository; `product` = AdsBookCMS, push disabled. Update by `git fetch product && git merge product/main` (§7).
+- Deploy by hand with `npm run deploy`; no push deploy workflow.
+
 ---
 
 ## 1. The one release path
