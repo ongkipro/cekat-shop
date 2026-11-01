@@ -326,7 +326,7 @@ export function AdminShell({
                     )}
                     <DropdownMenuItem onSelect={() => setChangelogOpen(true)}>
                       <History aria-hidden="true" />
-                      Catatan rilis
+                      What's new
                       <span className="ml-auto font-mono text-xs text-slate-400">v{CMS_VERSION.version}</span>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
@@ -484,23 +484,11 @@ export function AdminShell({
                   <History className="size-4" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-normal text-slate-900">Catatan Rilis</span>
+                  <span className="block text-sm font-normal text-slate-900">What's new</span>
                   <span className="block truncate text-xs text-slate-500">AdsBookCMS v{CMS_VERSION.version}</span>
                 </span>
                 <ChevronRight className="size-4 text-slate-300" aria-hidden="true" />
               </button>
-              <form method="POST" action="/api/admin/logout" data-logout-form className="mb-2">
-                <button type="submit" className="flex min-h-13 w-full items-center gap-3 rounded-xl border border-rose-200 bg-rose-50/70 px-3 py-2 text-left text-rose-700 active:bg-rose-100">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-rose-100">
-                    <LogOut className="size-4" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium">Keluar</span>
-                    <span className="block truncate text-xs text-rose-600">Akhiri sesi admin di perangkat ini</span>
-                  </span>
-                  <ChevronRight className="size-4 shrink-0 text-rose-300" aria-hidden="true" />
-                </button>
-              </form>
             </div>
           </SheetContent>
         </Sheet>

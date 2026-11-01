@@ -7933,3 +7933,227 @@ Findings are in `docs/AUDIT-2026-10-31-ui-actions.md`; what is left is in
 - Verification: the seven-size no-scroll check and the QR decode after the
   change.
 - The quote is credited "by ongki.pro" (owner), replacing "pepatah developer".
+
+### Entry 222: Tests find product migrations by suffix
+
+- Found while updating zvarashop to 1.8.0. Its own catalogue migrations hold
+  0067-0079, so the product's 0067-0078 are renumbered 0080-0091 there.
+  `whatsapp-numbers.test.ts` and `manual-payment-reconciliation.test.ts`
+  opened `0067_whatsapp_numbers.sql` and `0076_payment_transaction_attempts.sql`
+  by number and failed with ENOENT (14 tests), against the rule in RELEASE.md.
+- Both now resolve the file by suffix.
+- A guard in `schema-version.test.ts` fails when any test names a product
+  migration from 0067 on by number (fixture names in `deploy-preflight.test.ts`
+  excepted). It was checked against the unfixed files: it names both.
+- Verification: `npm test`, `npm run check`, `npm run build` and
+  `docs:check` pass.
+
+### Entry 223: 1.8.1 — payment copy, an honest /thanks, a feed Merchant Center accepts
+
+Found by a simulated buyer (COD, VA BCA, manual BCA transfer) on a local store,
+and an audit of the feeds and structured data.
+
+- **/payment.** The VA or account number had the copy button beside it, so a
+  14-digit VA broke onto two lines at phone width (`8808440911 / 0437`). The
+  number now owns its card, grouped by four (`8808 4409 1104 37`, one line at
+  360 px), and a full-width copy button sits under it: check icon, inverted
+  colours, "Nomor VA Tersalin", reset after 2.4 s. The copied value is the raw
+  number. `copyText` falls back to `execCommand` where the Clipboard API is
+  missing. The VA badge said "Verifikasi Admin"; it is "Otomatis" for VA and
+  "Dicek Admin" for a manual transfer, whose holder now has its own line.
+- **/thanks.** The summary did not add up: product − discount + shipping
+  (64.000) beside a total of 70.500 or 66.132, the fee nowhere. A fee row now
+  carries it. An unpaid VA/QRIS order was shown a success check and told to
+  "Kirim Bukti"; it is now "Selesaikan pembayaran" with the payment page as the
+  main action, and only a manual transfer asks for proof. Raw `VABCA`,
+  `pending` and `6281…` are shown as words (`src/lib/payment-display.ts`).
+- **Google feed.** It priced each item from `variants[0]`, the variant entered
+  first, while the product page shows the cheapest — a price mismatch Merchant
+  Center disapproves. It now uses the cheapest variant.
+- **Catalogue fields.** The admin form had no category (hard-coded "Umum"), no
+  brand and no description, so every feed item was "Umum" with the store as its
+  brand. It now edits all three; an update that omits them keeps the stored
+  values. Feeds prefer the merchant's description; with none, the product
+  describes itself from its own name, brand, category and variants.
+- **Structured data.** Product and landing pages use one `buildProductJsonLd`
+  (one Offer per variant, the product's brand). The Organization logo is
+  omitted when unset instead of being the homepage URL; the dead SearchAction
+  and the invalid ListItem `offers` are gone. `og:type` is `product` on a
+  product page; `article:publisher` (a Facebook page field) is gone.
+- **Sitemap and robots.** `lastmod` only when real (landing `updated_at`);
+  `/tentang` listed; a noindex store submits no URLs and robots drops its
+  `Sitemap:` line. AI search and training agents are named in robots.
+- **`/llms.txt`** maps the store for AI assistants from its own catalogue; no
+  admin, API or order-status surface. `llms` is a reserved landing slug.
+- Verification: `npm test` 1121 pass, `npm run check` 0/0/0, `npm run build`;
+  /payment, /thanks (COD, unpaid VA, manual, paid) and the admin product form
+  rendered in a browser; feed, sitemap, robots, llms.txt and product JSON-LD
+  read from a running local store.
+
+### Entry 224: 1.8.2 — Google categories from Google's list, product form, login wordmark
+
+- The variant ID sat in a grey box inside the input grid, a different height
+  and shape from every field beside it, and the remove action was a red link
+  under the grid. Each variant is now a card whose header carries its number,
+  its ID as an outline badge ("Baru" before the first save) and a ghost
+  "Hapus" button. Fields sit on two rows: name and SKU, then price, compare
+  price and weight. Prices take an `Rp` addon and weight a `gram` addon
+  (`InputGroup`), and the compare-price hint shows the saving.
+- The photo field was a native file input styled through `file:` classes. It
+  is now a dashed drop zone (drag-and-drop or click) with the preview, an
+  uploading spinner, and shadcn `Button`s for "Pilih/Ganti foto" and "Hapus
+  foto"; the native input stays in the DOM, visually hidden, for keyboard and
+  screen readers. The hint states the size advice the feeds need (1:1, at
+  least 800×800 px) and fixes the "ototmatis" typo.
+- Verification: `admin-islands-render` and `admin-controls` pass; the edit
+  page rendered at 1366 and 390 px with no horizontal overflow and no console
+  error; a PNG uploaded through the hidden input came back as a WebP URL.
+- **Google product category, exact.** A product had a free-text category, and
+  the feeds sent whatever `ad-taxonomy.ts` guessed from it — often nothing, or
+  a neighbouring category. The form now picks from Google's own taxonomy
+  (`public/data/google-product-taxonomy.json`, 5,595 rows, built from Google's
+  file by `scripts/generate-google-taxonomy.mjs`), searchable in Indonesian
+  through an alias list and by id (`src/lib/google-taxonomy.ts`). Migration
+  `0079` stores the id and path on the product; both feeds send the id as
+  `google_product_category` and the path as `product_type`, and the Meta feed
+  drops the engine's `fb_product_category` guess for such a product, since
+  Meta asks for one of the two. The engine stays the fallback. Google
+  publishes no id-ID list (that URL answers 404). The list ships as a static
+  asset, not a D1 table: identical for every install, and seeding ~5,600 rows
+  would cost every install writes.
+- The store-facing category label follows the first Google pick and stays
+  editable; brand shows the store name as its default.
+- **Login.** The AdsBookCMS wordmark on `/hello` links to the store's homepage,
+  on phones and desktops, with a visible focus ring.
+- **Automatic, then manual.** The form picks a Google category by itself from
+  the product's name and store label (`suggestGoogleCategories`: the keyword
+  engine's confident rule first, then a taxonomy search, with Indonesian
+  phrases such as "minyak kemiri" and "pasta gigi" mapped before single
+  words), marks it "Otomatis", and re-picks while the name changes. The other
+  suggestions are one-click chips (`Button` `size="sm"`); a pick or a clear
+  in the combobox makes it "Manual" and it is never overwritten. A saved
+  category loads as manual.
+- **robots.txt.** AI training crawlers are no longer named with `Allow: /`.
+  Cloudflare's managed robots.txt, on for the fleet's zones, already prepends a
+  `Disallow: /` group for each of them, so the file stated both. Search
+  engines and AI answer agents stay named; training crawlers fall to `*`,
+  which still allows them where the zone has no managed file.
+
+### Entry 225: 1.8.3 — Dashboard "Perlu tindakan", CSV export, checkout fields, storefront chrome
+
+Released as 1.8.3 (no migration); built on `feat/check-tabs`. 1139 tests pass, `npm run check` 0/0/0,
+`npm run build` succeeds; every admin page opened in a browser with no script
+error and no failed request.
+
+- **Dashboard.** A "Perlu tindakan" panel lists open work with a count and
+  the list it opens: waiting confirmation, ready to push, push refused or
+  unknown, online payment waiting, leads not contacted, and the three
+  Mengantar queues (`src/lib/order-attention.ts`, `GET
+  /api/admin/orders/attention`). Each count is read with its list's own rule:
+  the order list's void-aware status, `getMengantarDispatchEligibility` with
+  the env pickup fallback, `matchesShippingQueue`. `source-slug.test.ts` pins
+  each count to the rows its link returns. The cards compare with the period
+  just before (cut at the same time of day when the period runs to today), a
+  funnel runs lead → order → handed to Mengantar → received, and the Analitik
+  rankings show the top five products and landing pages for roles that hold
+  that menu. The setup line names the steps left.
+- **"Belum dibayar" was COD.** The filter and card matched
+  `payment_status = 'unpaid'`, which is every COD order and no QRIS/VA order
+  (those are written `pending`). They now mean an online order awaiting
+  payment (`AWAITING_PAYMENT_SQL`). Expiry is recorded on
+  `payment_transactions` only, never on the order, so a lapsed instruction
+  is read from the latest transaction: it leaves "Belum dibayar" and the
+  "Kedaluwarsa" filter, which matched nothing before, finds it.
+- **CSV export** of Pesanan, Pesanan tertinggal and Pengiriman
+  (`GET /api/admin/orders/export?kind=`, `src/lib/order-export.ts`): the
+  screen's own filters (moved to `src/lib/order-list-filter.ts`, which the
+  three list routes now use), one row per item, every field a column, money
+  on an order's first item row, Jakarta time, a UTF-8 BOM, formula-like text
+  defused, minted payment emails dropped. A cut file ends on a whole order
+  and the button reports it; a refused request is a toast, never a saved
+  file.
+- **Order list.** The landing page under the invoice moved to a tooltip (it
+  repeated the Produk column on stores that name pages after products; PRD
+  REQ-194 amended). The buyer's area reads "district, city" over the
+  province, catalogue-named (`buyerAreaLines`).
+- **`/admin/shipping`** keeps every parcel still in `processing` inside its
+  200-row window, so a queue tab cannot read 0 while the dashboard counts it.
+- **Cek WA & Ongkir** became two tabs, input left and result right by
+  container width; weight is entered in grams.
+- **Storefront.** The header is the store name, centred, with "Official
+  Store" under it; the announcement bar and the catalogue icon are gone. The
+  home page no longer lists landing pages. The footer is the navigation
+  (Belanja, Bantuan) on white under the header's hairline, with the store
+  name as a watermark sized to the footer and an ongki.pro credit; it reads
+  no database. The home hero is square.
+- **Checkout fields.** Focus draws a 3px ring in the store accent; a valid
+  field gets a green edge and a tick; variant rows take the field border and
+  are reachable by keyboard (their radios were `display: none`). All of it is
+  one marked block at the end of `form-hybrid.css`.
+- **Admin chrome.** The sidebar's product card floats as frosted glass; the
+  phone menu no longer carries Keluar (the account menu does).
+- **Removed.** `home/LandingPagesSection.astro` (nothing renders it since the
+  home page stopped listing landing pages; an install that kept its own home
+  template keeps its own copy) and `ui/popover.tsx` (imported by nothing).
+
+### Entry 226: 1.8.4 — Dashboard layout, comparisons in the chart, English metric names, What's new
+
+No migration. 1144 tests pass, `npm run check` 0/0/0; the dashboard and the
+release-notes dialog opened at 1440 and 390 px with no script error, failed
+request or horizontal scroll.
+
+- **Layout.** The period, the comparison and refresh share one toolbar (the
+  full-width "Periode laporan" card is gone). Six KPI cards, then the revenue
+  chart beside the payment mix, then Action needed, the sales funnel and the
+  top lists, so the chart is on the first screen and open work sits below the
+  numbers (Paduka, 2026-11-01).
+- **Comparison** (`src/lib/dashboard-compare.ts`, `?compare=` and `?preset=`
+  on `/api/admin/analytics`): a day against the same weekday a week earlier, a
+  calendar month against the same dates a month earlier (clamped to month
+  length), else the equal period before; chosen per preset unless the
+  operator picks one. A period running to today is compared up to the same
+  moment (`compareCutoff`). The comparison's own buckets are returned and drawn
+  as a dashed line in the chart; a single day reads cumulatively by hour.
+- **KPIs.** AOV, lead conversion (orders over leads plus orders) and revenue
+  split COD/non-COD are new; every card carries a delta chip, "baru" when the
+  comparison was empty, a muted dash when there is nothing to compare.
+- **Action needed** is one row per queue with its count, a red "N >24j" chip
+  for what has waited over a day (`STALE_AFTER_MS`, confirm, awaiting payment,
+  leads), the explanation as a tooltip, and a one-minute refresh while the tab
+  is visible.
+- **Language.** Metric names are English on the dashboard and in Analitik
+  (Revenue, Orders, Leads, AOV, Delivered revenue, Funnel); sentences stay
+  Indonesian. The compare control is the admin `FilterSelect`.
+- **What's new** replaces "Catatan rilis" everywhere: the running release in
+  full as a check list, earlier releases one line each, opening into the same
+  list (`ChangeList`). The dialog footer no longer clips its close button.
+- **Review fixes before release.** A whole calendar month compares with the
+  whole month before it (1–30 Sep against all of August, February against all
+  of January); the "sampai jam yang sama" caption appears only when the
+  comparison was actually cut (`compareCutoff` takes the comparison's end);
+  the non-COD revenue figure is labelled "Non-COD", since it holds unpaid
+  QRIS/VA orders too; KPI values are never truncated and step down by length
+  on phones (16, 14, 12px) so "Rp 1.234.567.890" fits a 360px card.
+
+### Entry 227: CAPI outbox — the cron drains a backlog, fleet tracking and cron audit (released as 1.8.5)
+
+No migration. 1146 tests pass, `npm run check` 0/0/0. Released as 1.8.5
+(version bump, "What's new" entry).
+
+- **Review of the CAPI delivery mechanism.** Every event is written to
+  `capi_event_outbox` before it is sent, sent at once, retried on backoff
+  (2, 4, 8, 16 minutes; 15 for a rate limit; five attempts) by any later
+  storefront request and by the hourly cron. That stays: Cloudflare Queues
+  would give delayed retries natively but need the Workers Paid plan, and a
+  faster cron would only matter for a store with no visitors at all.
+- **The one gap.** The cron drained one batch of ten an hour, and it is the
+  only drain a store between campaigns has, so a requeue of 2026-09-03's size
+  (107 rows) needed ten hours to land. `drainCapiOutboxBacklog` now drains up
+  to three batches per run (`CAPI_CRON_DRAIN_BATCHES`) and stops at the first
+  batch that does not land in full, so a refusing Meta does not burn more rows'
+  attempt budgets. Requeueing failed rows stays a manual operator action.
+- **Fleet audit after 1.8.4** (`TRACKING_SPECS.md` §16.1a, `docs/FLEET.md`):
+  one Pixel per store, PageView/ViewContent with `eid`, click ids and UTM kept,
+  Graph API v26.0 everywhere. skincarebpom's hourly cron, commented out since
+  2026-08-22 to free a slot for zanobyshop, is registered again.
+- PRD A47 records the 1.8.3–1.8.4 dashboard requirements (REQ-274–279).

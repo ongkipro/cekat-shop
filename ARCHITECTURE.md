@@ -4,7 +4,7 @@
 > **Install model:** **1 installer = 1 Worker = 1 store.** Isolation comes from the deployment boundary, not from request-time tenant routing.
 > **This repository:** the product. It deploys nothing; each install deploys from its own repository against its own resources.
 > **First install:** `permatamall.shop`, in the separate `ongkipro/permatamall` repository, carrying its own catalogue in its own database. Its `cmsads-*` resource names are legacy and deliberately not renamed.
-> Verified against disk: 2026-10-31 @ `7a8f26e` + fix/ui-actions-audit (§3 tables, migration chain and payment retry; §7 quote origin; remaining sections retain their recorded evidence)
+> Verified against disk: 2026-11-01 @ `d0ea0d2` (1.8.3: §3 order lists, export and dashboard open work; earlier sections retain their recorded evidence)
 
 This document describes what the system **actually is**. Where the intended AdsBookCMS product differs from what ships today, the gap is stated explicitly in §10 rather than written as if it were already true. Code and executable evidence win over this document; when they disagree, fix the document.
 
@@ -73,13 +73,15 @@ Runs on every request, in order: canonical host redirect (`www` → apex), ad cl
 | Content pages | `/tentang`, `/kontak`, `/testimoni`, `/sitemap`, `/disclaimer`, `/kebijakan-privasi`, `/kebijakan-cookie`, `/syarat-ketentuan`, `/pengiriman` |
 | Landing pages | `/[slug]` — catch-all resolved from D1 `landing_pages`; falls back to a `301` to `/produk/<slug>` (query string kept, cached five minutes) when the slug is a product, else 404. Supports `?preview=1` behind an admin session |
 | Checkout forms | `/hybrid-form`, `/middle-form`, `/full-form`, `/geoipform`, `/embed/form`. `/form-hybrid`, `/form-middle`, `/form-full` are query-preserving 308 redirects that **do** exist |
-| Feeds | `/sitemap.xml`, `/feed/google-catalog.xml`, `/feed/meta-catalog.xml`, `/robots.txt` (dynamic, `src/pages/robots.txt.ts`) |
+| Feeds | `/sitemap.xml` (`src/lib/sitemap.ts`), `/feed/google-catalog.xml`, `/feed/meta-catalog.xml`, `/robots.txt` (dynamic, `src/pages/robots.txt.ts`), `/llms.txt` (`src/lib/llms-txt.ts`) — for a `PUBLIC_SITE_NOINDEX` store the sitemap is empty, `/llms.txt` answers 404 and robots drops its `Sitemap:` line but keeps crawling open so `noindex` is seen; the catalog feeds are unaffected (ads still need them) |
 | Media | `/assets/[...key]` (R2 `uploads/` prefix), `/media/[...key]` (R2 `content/` prefix) |
 | Admin | `/hello` (login), `/admin/*` — see generated route map for the page inventory |
 | Public API | `/api/*` — checkout, locations, shipping rates, payment methods, order status, Meta events |
 | Headless API | `/api/v1/*` — storefront descriptor, products, geo, shipping rates, checkout, tracking events |
 | Admin payment reconciliation | `/api/admin/payment-reconciliation` |
-| Insights (A37 backend, not yet released) | `/api/admin/insights/{landing,trend,products,locations,times}` — owner/admin/advertiser only, aggregates, bounded 90-day Jakarta period, one D1 batch per request; `order-metrics.ts` shares revenue rules with dashboard. No-store follows admin middleware. Five `/admin/analytics/*` pages share InsightsPage/InsightsReport; trend alone imports the lazy chart. UI acceptance remains A-357–A-362 (browser blocked). |
+| Admin order lists and export (1.8.3) | `/api/admin/orders`, `/api/admin/abandoned-orders`, `/api/admin/shipping` build their WHERE from `src/lib/order-list-filter.ts`, which `/api/admin/orders/export?kind=orders\|abandoned\|shipping` (CSV, `src/lib/order-export.ts`) shares, so an export holds the rows its screen shows. `AWAITING_PAYMENT_SQL` (online, unpaid, not voided, latest instruction not expired) is the "Belum dibayar" filter and card; `PAYMENT_EXPIRED_SQL` reads expiry from `payment_transactions`, the only place it is recorded. |
+| Dashboard open work (1.8.3) | `/api/admin/orders/attention` (`src/lib/order-attention.ts`): counts read with each linked list's own rule — the order list's void-aware status, `getMengantarDispatchEligibility` with the env pickup fallback, `matchesShippingQueue` over the shipping window. `/api/admin/shipping` orders `processing` parcels first inside its 200-row window so the queue tabs hold what the dashboard counts. |
+| Insights (A37) | `/api/admin/insights/{landing,trend,products,locations,times}` — owner/admin/advertiser only, aggregates, bounded 90-day Jakarta period, one D1 batch per request; `order-metrics.ts` shares revenue rules with dashboard. No-store follows admin middleware. Five `/admin/analytics/*` pages share InsightsPage/InsightsReport; trend alone imports the lazy chart. UI acceptance remains A-357–A-362 (browser blocked). |
 
 The headless `/api/v1/*` family is **implemented and shipping**, authenticated by `X-App-Key`/`Bearer` against the `developer_api_keys` table (`src/lib/headless-api.ts`) plus an origin allowlist. Keys are issued at `/admin/settings/developer`.
 

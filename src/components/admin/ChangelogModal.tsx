@@ -1,3 +1,4 @@
+import { ChevronDown, CircleCheck } from "lucide-react";
 import { CMS_VERSION } from "@/lib/version";
 import {
   Dialog,
@@ -29,10 +30,131 @@ interface ChangelogRelease {
 // changelog.test.ts fails when version.ts moves without a matching entry here.
 const CHANGELOG_RELEASES: ChangelogRelease[] = [
   {
+    version: "1.8.5",
+    date: "1 November 2026",
+    releaseTag: "2026.10-ops",
+    isLatest: true,
+    highlight: "Event Meta CAPI yang tertunda terkirim lebih cepat saat toko sepi.",
+    changes: [
+      {
+        title: "Antrean CAPI dikuras lebih banyak per jam",
+        description: "Cron per jam kini mengirim sampai 30 event tertunda (sebelumnya 10) dan berhenti bila Meta menolak, sehingga jatah kirim ulang event lain tidak terbuang.",
+      },
+    ],
+  },
+  {
+    version: "1.8.4",
+    date: "1 November 2026",
+    releaseTag: "2026.10-ops",
+    isLatest: false,
+    highlight: "Dashboard yang lebih ringkas: grafik di layar pertama, pembanding di dalam grafik, dan istilah metrik dalam English.",
+    changes: [
+      {
+        title: "Layout dashboard baru",
+        description: "Periode, pembanding, dan refresh dalam satu toolbar. Enam KPI di atas, lalu grafik Revenue di samping Payment mix, lalu Action needed, Sales funnel, dan Top products & landing pages.",
+      },
+      {
+        title: "Compare di dalam grafik",
+        description: "Pembanding digambar sebagai garis putus-putus. Hari ini dibanding hari yang sama minggu lalu (Jumat vs Jumat), bulan ini dibanding tanggal yang sama bulan lalu, atau pilih sendiri. Periode yang masih berjalan dibanding sampai jam yang sama; Hari ini tampil kumulatif per jam.",
+      },
+      {
+        title: "KPI baru",
+        description: "AOV, Lead conversion, dan Revenue terpisah COD vs Non-COD. Setiap kartu menampilkan naik/turun, \"baru\" bila pembanding kosong, atau tanda strip bila belum ada data.",
+      },
+      {
+        title: "Action needed yang ringkas",
+        description: "Satu baris per antrean dengan angka, tanda merah untuk yang menunggu lebih dari 24 jam, dan diperbarui otomatis tiap menit.",
+      },
+      {
+        title: "Istilah English dan What's new",
+        description: "Nama metrik di dashboard dan Analitik memakai English (Revenue, Orders, AOV, Conversion rate, Funnel). Catatan rilis menjadi What's new: versi aktif lengkap, versi lama bisa dibuka satu per satu.",
+      },
+    ],
+  },
+  {
+    version: "1.8.3",
+    date: "1 November 2026",
+    releaseTag: "2026.10-ops",
+    isLatest: false,
+    highlight: "Dashboard yang menunjukkan pekerjaan hari ini, export CSV, dan tampilan toko yang lebih bersih.",
+    changes: [
+      {
+        title: "Perlu tindakan",
+        description: "Dashboard kini menampilkan order yang menunggu konfirmasi, siap push ke Mengantar, push bermasalah, menunggu pembayaran online, lead belum dihubungi, serta antrean resi, pickup, dan drop-off. Angkanya sama dengan daftar yang dibuka, memakai syarat push Mengantar yang sama.",
+      },
+      {
+        title: "Perbandingan, corong, dan teratas",
+        description: "Setiap kartu menunjukkan naik/turun dibanding periode sebelumnya (dipotong di jam yang sama bila periode berjalan sampai hari ini), corong lead sampai paket diterima, dan 5 produk serta landing page teratas.",
+      },
+      {
+        title: "Export CSV",
+        description: "Pesanan, Pesanan tertinggal, dan Pengiriman bisa diunduh sebagai CSV sesuai filter yang aktif: satu baris per produk, setiap data satu kolom (nama, WhatsApp, alamat, kecamatan, kota, provinsi, produk, varian, harga, dan lainnya).",
+      },
+      {
+        title: "Belum dibayar yang benar",
+        description: "Filter dan kartu Belum dibayar kini menghitung order online (QRIS/VA/transfer) yang menunggu pembayaran, bukan COD. Pembayaran yang kedaluwarsa pindah ke filter Kedaluwarsa.",
+      },
+      {
+        title: "Tampilan toko",
+        description: "Header berisi nama toko di tengah dengan Official Store, footer menjadi navigasi dengan watermark nama toko, beranda tanpa daftar landing page, dan form checkout dengan tanda fokus serta centang saat isian benar.",
+      },
+    ],
+  },
+  {
+    version: "1.8.2",
+    date: "31 Oktober 2026",
+    releaseTag: "2026.10-ops",
+    isLatest: false,
+    highlight: "Kategori Google resmi untuk setiap produk, form produk yang lebih rapi, dan logo login yang kembali ke beranda.",
+    changes: [
+      {
+        title: "Kategori Google resmi",
+        description: "Kategori Google dipilih otomatis dari nama produk (badge Otomatis), dengan saran lain yang tinggal diklik, atau cari sendiri dari taksonomi resmi Google dalam bahasa Indonesia (mis. sabun, serum wajah, cuka). ID-nya dikirim persis ke feed Google Merchant dan katalog Meta. Label kategori di toko terisi otomatis dan tetap bisa diubah. Merek kosong berarti nama toko.",
+      },
+      {
+        title: "Kartu varian yang rapi",
+        description: "Setiap varian punya kepala sendiri berisi nomor, ID varian (atau \"Baru\"), dan tombol hapus. Harga memakai awalan Rp, berat memakai gram, dan persentase hemat dari harga coret tampil otomatis.",
+      },
+      {
+        title: "Logo login ke beranda",
+        description: "Logo AdsBookCMS di halaman login kini bisa diklik untuk kembali ke beranda toko, di HP maupun desktop.",
+      },
+      {
+        title: "Upload foto tarik-lepas",
+        description: "Foto produk bisa ditarik ke kotak upload atau dipilih lewat tombol. Pratinjau, status mengunggah, serta tombol Ganti dan Hapus foto ada di satu tempat, lengkap dengan saran ukuran untuk feed Google dan Meta.",
+      },
+    ],
+  },
+  {
+    version: "1.8.1",
+    date: "31 Oktober 2026",
+    releaseTag: "2026.10-ops",
+    isLatest: false,
+    highlight: "Halaman pembayaran dan terima kasih lebih jelas, feed Google lebih akurat, dan produk kini punya kategori, merek, serta deskripsi.",
+    changes: [
+      {
+        title: "Salin nomor VA dan rekening lebih mudah",
+        description: "Nomor VA dan rekening tampil penuh satu baris, dikelompokkan per 4 digit. Tombol salin ada di bawah nomor dan berubah jadi \"Tersalin\" saat ditekan. Nama penerima transfer tampil di baris sendiri.",
+      },
+      {
+        title: "Halaman terima kasih yang klop",
+        description: "Ringkasan pembayaran kini menampilkan biaya admin atau biaya layanan COD, jadi totalnya pas. Order VA/QRIS yang belum dibayar diarahkan ke instruksi pembayaran; hanya transfer manual yang diminta kirim bukti.",
+      },
+      {
+        title: "Kategori, merek, dan deskripsi produk",
+        description: "Form produk kini punya kolom Kategori, Merek, dan Deskripsi. Ketiganya tampil di halaman produk dan dikirim ke feed Google dan Meta. Isi untuk setiap produk agar feed tidak lagi memakai \"Umum\" dan nama toko.",
+      },
+      {
+        title: "Feed Google dan SEO",
+        description: "Harga di feed kini mengikuti varian termurah, sama dengan halaman produk, sehingga tidak ditolak Merchant Center karena harga beda. Data terstruktur produk diseragamkan, sitemap lebih jujur, dan toko kini punya /llms.txt untuk asisten AI.",
+      },
+    ],
+  },
+  {
     version: "1.8.0",
     date: "31 Oktober 2026",
     releaseTag: "2026.10-ops",
-    isLatest: true,
+    isLatest: false,
     highlight: "Analitik lengkap, follow-up WhatsApp satu ketuk, multi-gudang, dan tampilan toko baru ala tema Shopify.",
     changes: [
       {
@@ -767,6 +889,27 @@ interface ChangelogModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * One release's changes, the same list for the running release and for an
+ * opened earlier one: a check, the title on its own line, the explanation
+ * under it, a hairline between items.
+ */
+function ChangeList({ changes, compact = false }: { changes: ChangelogRelease["changes"]; compact?: boolean }) {
+  return (
+    <ul className="divide-y divide-slate-100">
+      {changes.map((item, idx) => (
+        <li key={idx} className={`flex gap-3 ${compact ? "py-2.5" : "py-3"} first:pt-1 last:pb-0`}>
+          <CircleCheck className="mt-0.5 size-4 shrink-0 text-emerald-600" aria-hidden="true" />
+          <div className="min-w-0">
+            <p className={`${compact ? "text-xs" : "text-sm"} font-medium leading-5 text-slate-900`}>{item.title}</p>
+            <p className="mt-0.5 text-xs leading-5 text-slate-600">{item.description}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -774,69 +917,62 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
         <DialogHeader className="border-b border-slate-200 px-6 py-4 text-left">
           <div className="flex items-center justify-between pr-8">
             <DialogTitle className="text-base font-semibold text-slate-950">
-              Catatan Rilis
+              What's new
             </DialogTitle>
             <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-xs font-medium text-slate-600">
               v{CMS_VERSION.version}
             </span>
           </div>
           <DialogDescription className="text-xs text-slate-500">
-            Dokumentasi pembaruan fitur, optimasi performa, dan catatan arsitektur AdsBookCMS.
+            Apa yang berubah di setiap versi AdsBookCMS.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
-          {CHANGELOG_RELEASES.map((rel) => (
-            <section
-              key={rel.version}
-              className="border-b border-slate-100 pb-6 last:border-b-0 last:pb-0"
-            >
-              <div className="flex flex-wrap items-baseline gap-2">
-                <h3 className="font-mono text-sm font-semibold text-slate-950">
-                  v{rel.version}
-                </h3>
-                {rel.isLatest && (
-                  <span className="rounded bg-slate-900 px-1.5 py-0.5 text-xs font-medium text-white">
-                    Aktif
-                  </span>
-                )}
-                <span className="text-xs text-slate-400">·</span>
+        {/* The running release in full; every earlier one a single line that
+            opens in place. Forty releases expanded at once read as one wall
+            of text (Paduka, 2026-11-01). */}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {CHANGELOG_RELEASES.slice(0, 1).map((rel) => (
+            <section key={rel.version} aria-labelledby={`release-${rel.version}`}>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 id={`release-${rel.version}`} className="font-mono text-sm font-semibold text-slate-950">v{rel.version}</h3>
+                {rel.isLatest && <span className="rounded bg-slate-900 px-1.5 py-0.5 text-xs font-medium text-white">Aktif</span>}
                 <time className="text-xs text-slate-500">{rel.date}</time>
-                {rel.releaseTag && (
-                  <>
-                    <span className="text-xs text-slate-400">·</span>
-                    <span className="font-mono text-xs text-slate-400">
-                      {rel.releaseTag}
-                    </span>
-                  </>
-                )}
               </div>
+              <p className="mt-2 text-sm leading-6 text-slate-800">{rel.highlight}</p>
+              <div className="mt-3"><ChangeList changes={rel.changes} /></div>
+            </section>
+          ))}
 
-              <p className="mt-1.5 text-xs text-slate-600">
-                {rel.highlight}
-              </p>
-
-              <ul className="mt-3 space-y-2 text-xs text-slate-700">
-                {rel.changes.map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-2 leading-relaxed">
-                    <span
-                      className="mt-1.5 size-1.5 shrink-0 rounded-full bg-slate-300"
-                      aria-hidden="true"
-                    />
-                    <div>
-                      <strong className="font-medium text-slate-900">
-                        {item.title}:
-                      </strong>{" "}
-                      <span className="text-slate-600">{item.description}</span>
-                    </div>
+          {CHANGELOG_RELEASES.length > 1 && (
+            <section className="mt-6" aria-labelledby="release-history">
+              <h3 id="release-history" className="text-xs font-semibold uppercase tracking-wider text-slate-500">Versi sebelumnya</h3>
+              <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-200">
+                {CHANGELOG_RELEASES.slice(1).map((rel) => (
+                  <li key={rel.version}>
+                    <details className="group">
+                      <summary className="flex cursor-pointer list-none items-start gap-3 px-3.5 py-3 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-300 [&::-webkit-details-marker]:hidden">
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-baseline gap-2">
+                            <span className="font-mono text-xs font-semibold text-slate-900">v{rel.version}</span>
+                            <time className="text-xs text-slate-400">{rel.date}</time>
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs leading-5 text-slate-600 group-open:whitespace-normal">{rel.highlight}</span>
+                        </span>
+                        <ChevronDown className="mt-0.5 size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+                      </summary>
+                      <div className="border-t border-slate-100 bg-slate-50/50 px-3.5 pb-3 pt-2">
+                        <ChangeList changes={rel.changes} compact />
+                      </div>
+                    </details>
                   </li>
                 ))}
               </ul>
             </section>
-          ))}
+          )}
         </div>
 
-        <DialogFooter className="border-t border-slate-200 bg-slate-50/70 px-6 py-3 sm:flex sm:items-center sm:justify-between">
+        <DialogFooter className="m-0 rounded-none border-t border-slate-200 bg-slate-50/70 px-6 py-3 sm:flex sm:items-center sm:justify-between">
           <div className="text-xs font-mono text-slate-500">
             {CMS_VERSION.coreEngine} · Schema v{CMS_VERSION.schemaVersion}
           </div>

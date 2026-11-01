@@ -1,6 +1,6 @@
 # PRD — AdsBookCMS (single)
 
-> Verified against disk: 2026-10-31 @ `d61afbe` (A38 cancelled; A46, REQ-249 amendment; other sections retain their recorded evidence)
+> Verified against disk: 2026-11-01 @ `368833b` (A47 added for 1.8.3–1.8.4; REQ-194 amended; other sections retain their recorded evidence)
 
 ## A43 — Resolve kecamatan to Mengantar areas without calling Mengantar
 
@@ -688,6 +688,10 @@ rows-read ceilings; it retains the covering experiment for reproducibility.
   a short chip beside the existing traffic-source badge, truncated with the full
   path in its tooltip, so the list gains no column and a phone card gains one
   chip rather than a line.
+  *Amended 2026-11-01:* on the order list the landing page is the tooltip of
+  the traffic-source badge rather than visible text. Stores name landing pages
+  after their products, so the chip repeated the Produk column on every row.
+  The filter, the abandoned-lead list and order detail are unchanged.
 - **REQ-195** — The slug shall be shown with what it is when it is known: a CMS
   landing page by its title, a native page by its registered name, a product page
   by its product, otherwise the bare slug.
@@ -1354,6 +1358,40 @@ on the order page is removed; the chip's WhatsApp link carries the message.
   tells the operator to correct it there by hand. The COD Purchase already
   sent keeps its event id (the order number), so the paid Purchase that
   follows deduplicates against it.
+
+## A47 — Dashboard open work, comparisons and CSV export (1.8.3–1.8.4)
+
+Accepted and delivered 2026-11-01 (Paduka: "rekomendasimu kerjakan
+keseluruhan", then the dashboard layout and English metric names). Released as
+1.8.3 and 1.8.4; BUILD-LOG Entries 225–226.
+
+- **REQ-274** (Must, ubiquitous) — The dashboard shall list open work
+  ("Action needed") for roles that work the order list: waiting confirmation,
+  ready to push to Mengantar, push refused or unknown, online payment waiting,
+  leads not contacted, and the waybill, pickup and drop-off queues. Each count
+  shall be read with the rule of the list it links to, including
+  `getMengantarDispatchEligibility`, and shall show how many have waited more
+  than 24 hours where age matters.
+  - Acceptance: a count equals the rows its link opens (`source-slug.test.ts`).
+- **REQ-275** (Must, ubiquitous) — "Belum dibayar" shall mean an online order
+  awaiting payment, not COD; an expired payment instruction, recorded on
+  `payment_transactions` only, shall move the order to "Kedaluwarsa".
+- **REQ-276** (Must, event) — When an operator exports Pesanan, Pesanan
+  tertinggal or Pengiriman, the CSV shall hold the rows the screen's filters
+  select, one row per item, every field in its own column, order money on an
+  order's first item row only; a truncated file ends on a whole order and says
+  so; a refused request saves no file.
+- **REQ-277** (Must, ubiquitous) — Each KPI shall be compared with a comparison
+  period: the same weekday a week earlier for a day, the same dates a month
+  earlier for a month (a whole month against the whole month before), else the
+  equal period before; cut at the same moment when the period runs to today;
+  drawn in the revenue chart as a dashed line.
+- **REQ-278** (Should, ubiquitous) — The dashboard shall show AOV, lead
+  conversion, revenue split COD / non-COD, a lead-to-delivery funnel and the
+  top five products and landing pages; metric names shall be English while
+  sentences stay Indonesian.
+- **REQ-279** (Should, ubiquitous) — Release notes shall be called "What's
+  new": the running release in full, earlier ones collapsible.
 
 ## A46 — Pickup or drop-off when pushing to Mengantar
 
